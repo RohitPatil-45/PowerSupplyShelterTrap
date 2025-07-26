@@ -33,36 +33,41 @@ public class TrapThreadClass implements Runnable {
     }
 
     public void run() {
+        
+        SnmpTrapListener.trap_count=SnmpTrapListener.trap_count+1;
+        System.out.println("trap_count:"+SnmpTrapListener.trap_count);
 
-        PDU command = e.getPDU();
-        if (command != null) {
+        try {
+
+            PDU command = e.getPDU();
+            if (command != null) {
 //            String device_ip = e.getPeerAddress().toString();
-//            device_ip = device_ip.split("/")[0];
-            String device_ip = "172.30.161.22";
-            System.out.println("Device IP:" + device_ip);
-            String device_typeC = "POWER SUPPLY";
+//           device_ip = device_ip.split("/")[0];
+                String device_ip = "172.30.161.22";
+                System.out.println("Device IP:" + device_ip);
+                String device_typeC = "POWER SUPPLY";
 
-            System.out.println("snmp trap received: " + command.toString());
-            Timestamp trapReceivedTime = new Timestamp(System.currentTimeMillis());
-            Map<String, String> parsedData = new HashMap<>();
-            boolean isTrapValid = false;
+                System.out.println("snmp trap received: " + command.toString());
+                Timestamp trapReceivedTime = new Timestamp(System.currentTimeMillis());
+                Map<String, String> parsedData = new HashMap<>();
+                boolean isTrapValid = false;
 
-            for (VariableBinding vb : command.getVariableBindings()) {
-                // System.out.println(vb.getOid() + " = " + vb.getVariable());
-                String oid = vb.getOid().toString();
-                String value = vb.getVariable().toString();
-                System.out.println(oid + " = " + value);
+                for (VariableBinding vb : command.getVariableBindings()) {
+                    // System.out.println(vb.getOid() + " = " + vb.getVariable());
+                    String oid = vb.getOid().toString();
+                    String value = vb.getVariable().toString();
+                    System.out.println(oid + " = " + value);
 
-                parsedData.put(oid, value);
-            }
+                    parsedData.put(oid, value);
+                }
 
-            // Example: Extract specific data from trap
-            if (parsedData.containsKey("1.3.6.1.6.3.1.1.4.1.0")) {
+                // Example: Extract specific data from trap
+                if (parsedData.containsKey("1.3.6.1.6.3.1.1.4.1.0")) {
 
-                String trapOID = parsedData.get("1.3.6.1.6.3.1.1.4.1.0");
+                    String trapOID = parsedData.get("1.3.6.1.6.3.1.1.4.1.0");
 
-                if (trapOID.equals("1.3.6.1.4.1.20246.2.3.1.1.1.3.1.0.1")) {
-                    isTrapValid = true;
+                    if (trapOID.equals("1.3.6.1.4.1.20246.2.3.1.1.1.3.1.0.1")) {
+                        isTrapValid = true;
 
 //                        MF Delay #warning,(Main Failure)
 //1.3.6.1.2.1.1.3.0 = 87 days, 23:52:44.07  node_uptime
@@ -73,71 +78,74 @@ public class TrapThreadClass implements Runnable {
 //1.3.6.1.4.1.20246.2.3.1.1.1.2.2.4.0 = 1
 //1.3.6.1.4.1.20246.2.3.1.1.1.2.2.8.0 = 32825
 //1.3.6.1.4.1.20246.2.3.1.1.1.2.2.9.0 = 3  
-                    //.1.3.6.1.4.1.20246.2.3.1.1.1.3.1.0.1	
-                    //OID: .iso.org.dod.internet.mgmt.mib-2.system.sysUpTime.0. Value: 2110 hours 42 minutes 36.07 seconds; 
-                    //OID: .1.3.6.1.6.3.1.1.4.1.0. Value: .1.3.6.1.4.1.20246.2.3.1.1.1.3.1.0.1; 
-                    //OID: .1.3.6.1.4.1.20246.2.3.1.1.1.2.1.1.0. Value: W4-PWR2; 
-                    //OID: .1.3.6.1.4.1.20246.2.3.1.1.1.2.1.2.0. Value: DMBS PSU; 
-                    //OID: .1.3.6.1.4.1.20246.2.3.1.1.1.2.1.3.0. Value: 2025-06-06T15:13:04; 
-                    //OID: .1.3.6.1.4.1.20246.2.3.1.1.1.2.2.4.0. Value: 0; 
-                    //OID: .1.3.6.1.4.1.20246.2.3.1.1.1.2.2.8.0. Value: 25; 
-                    //OID: .1.3.6.1.4.1.20246.2.3.1.1.1.2.2.9.0. Value: 1; 
-                    //OID: .1.3.6.1.4.1.20246.2.3.1.1.1.2.2.11.0. Value: Non Urg RFA; 
-                    try {
+                        //.1.3.6.1.4.1.20246.2.3.1.1.1.3.1.0.1	
+                        //OID: .iso.org.dod.internet.mgmt.mib-2.system.sysUpTime.0. Value: 2110 hours 42 minutes 36.07 seconds; 
+                        //OID: .1.3.6.1.6.3.1.1.4.1.0. Value: .1.3.6.1.4.1.20246.2.3.1.1.1.3.1.0.1; 
+                        //OID: .1.3.6.1.4.1.20246.2.3.1.1.1.2.1.1.0. Value: W4-PWR2; 
+                        //OID: .1.3.6.1.4.1.20246.2.3.1.1.1.2.1.2.0. Value: DMBS PSU; 
+                        //OID: .1.3.6.1.4.1.20246.2.3.1.1.1.2.1.3.0. Value: 2025-06-06T15:13:04; 
+                        //OID: .1.3.6.1.4.1.20246.2.3.1.1.1.2.2.4.0. Value: 0; 
+                        //OID: .1.3.6.1.4.1.20246.2.3.1.1.1.2.2.8.0. Value: 25; 
+                        //OID: .1.3.6.1.4.1.20246.2.3.1.1.1.2.2.9.0. Value: 1; 
+                        //OID: .1.3.6.1.4.1.20246.2.3.1.1.1.2.2.11.0. Value: Non Urg RFA; 
+                        try {
 
-                        String deviceName = parsedData.get("1.3.6.1.4.1.20246.2.3.1.1.1.2.1.1.0");
+                            String deviceName = parsedData.get("1.3.6.1.4.1.20246.2.3.1.1.1.2.1.1.0");
 
-                        String deviceType = parsedData.get("1.3.6.1.4.1.20246.2.3.1.1.1.2.1.2.0");
-                        String eventTime = parsedData.get("1.3.6.1.4.1.20246.2.3.1.1.1.2.1.3.0");
-                        String alarmStatus = parsedData.get("1.3.6.1.4.1.20246.2.3.1.1.1.2.2.4.0");
-                        String trapValue = parsedData.get("1.3.6.1.4.1.20246.2.3.1.1.1.2.2.8.0");
-                        String severity = parsedData.get("1.3.6.1.4.1.20246.2.3.1.1.1.2.2.9.0");
-                        String alarmName = parsedData.get("1.3.6.1.4.1.20246.2.3.1.1.1.2.2.11.0");
+                            String deviceType = parsedData.get("1.3.6.1.4.1.20246.2.3.1.1.1.2.1.2.0");
+                            String eventTime = parsedData.get("1.3.6.1.4.1.20246.2.3.1.1.1.2.1.3.0");
+                            String alarmStatus = parsedData.get("1.3.6.1.4.1.20246.2.3.1.1.1.2.2.4.0");
+                            String trapValue = parsedData.get("1.3.6.1.4.1.20246.2.3.1.1.1.2.2.8.0");
+                            String severity = parsedData.get("1.3.6.1.4.1.20246.2.3.1.1.1.2.2.9.0");
+                            String alarmName = parsedData.get("1.3.6.1.4.1.20246.2.3.1.1.1.2.2.11.0");
 
-                        String nodeUptime = parsedData.get("1.3.6.1.2.1.1.3.0");
+                            String nodeUptime = parsedData.get("1.3.6.1.2.1.1.3.0");
 
-                        // Parsed summary
-                        System.out.println("\n### Parsed Summary ###");
-                        System.out.println("Trap OID     : " + trapOID);
-                        System.out.println("nodeUptime   : " + nodeUptime);
-                        System.out.println("deviceName   : " + deviceName);
-                        System.out.println("deviceType   : " + deviceType);
-                        System.out.println("Event Time   : " + eventTime);
-                        System.out.println("Alarm Name   : " + alarmName);
-                        System.out.println("Alarm Status : " + (alarmStatus != null && alarmStatus.equals("1") ? "Active" : "Cleared"));
-                        System.out.println("Severity     : " + severity);
-                        System.out.println("trap Value : " + trapValue);
+                            // Parsed summary
+                            System.out.println("\n### Parsed Summary ###");
+                            System.out.println("Trap OID     : " + trapOID);
+                            System.out.println("nodeUptime   : " + nodeUptime);
+                            System.out.println("deviceName   : " + deviceName);
+                            System.out.println("deviceType   : " + deviceType);
+                            System.out.println("Event Time   : " + eventTime);
+                            System.out.println("Alarm Name   : " + alarmName);
+                            System.out.println("Alarm Status OG : " + alarmStatus);
 
-                        SNMPTrapLogModel log = new SNMPTrapLogModel();
-                        log.setDeviceIP(device_ip);
-                        log.setDeviceType(deviceType);
-                        log.setDeviceName(deviceName);
-                        log.setEventTime(Timestamp.valueOf(LocalDateTime.parse(eventTime)));
-                        log.setAlarmName(alarmName);
-                        log.setAlarmStatus(alarmStatus);
-                        log.setSeverity(severity);
-                        log.setAlarmID(trapValue);
-                        log.setNodeUptime(nodeUptime);
-                        log.setTrapOID(trapOID);
-                        log.setTrapTime(trapReceivedTime);
+                            System.out.println("Alarm Status : " + (alarmStatus != null && alarmStatus.equals("1") ? "Active" : "Cleared"));
+                            System.out.println("Alarm Name   : " + alarmName);
 
-                        SnmpTrapListener.trapLogList.add(log);
+                            System.out.println("Severity     : " + severity);
+                            System.out.println("trap Value : " + trapValue);
 
-                        SNMPTrapUpdateModel model = new SNMPTrapUpdateModel();
-                        model.setDeviceIP(device_ip);
-                        model.setAlarmStatus(alarmStatus);
-                        model.setSeverity(severity);
-                        model.setTrapValue(trapValue);
-                        model.setNodeUptime(nodeUptime);
-                        model.setDeviceName(deviceName);
-                        model.setDeviceType(deviceType);
-                        model.setServiceName(alarmName);
+                            SNMPTrapLogModel log = new SNMPTrapLogModel();
+                            log.setDeviceIP(device_ip);
+                            log.setDeviceType(deviceType);
+                            log.setDeviceName(deviceName);
+                            log.setEventTime(Timestamp.valueOf(LocalDateTime.parse(eventTime)));
+                            log.setAlarmName(alarmName);
+                            log.setAlarmStatus(alarmStatus);
+                            log.setSeverity(severity);
+                            log.setAlarmID(trapValue);
+                            log.setNodeUptime(nodeUptime);
+                            log.setTrapOID(trapOID);
+                            log.setTrapTime(trapReceivedTime);
 
-                        SnmpTrapListener.updateTrapList.add(model);
+                            SnmpTrapListener.trapLogList.add(log);
 
-                        String currentAlarmStatus = SnmpTrapListener.alarmStatus.get(device_ip + "~" + trapValue);
-                        if (!currentAlarmStatus.equalsIgnoreCase(alarmStatus)) {
+                            SNMPTrapUpdateModel model = new SNMPTrapUpdateModel();
+                            model.setDeviceIP(device_ip);
+                            model.setAlarmStatus(alarmStatus);
+                            model.setSeverity(severity);
+                            model.setTrapValue(trapValue);
+                            model.setNodeUptime(nodeUptime);
+                            model.setDeviceName(deviceName);
+                            model.setDeviceType(deviceType);
+                            model.setServiceName(alarmName);
 
+                            SnmpTrapListener.updateTrapList.add(model);
+
+                            // String currentAlarmStatus = SnmpTrapListener.alarmStatus.get(device_ip + "~" + trapValue);
+                            //if (!currentAlarmStatus.equalsIgnoreCase(alarmStatus)) {
                             EventLog event = new EventLog();
                             event.setDeviceId(device_ip);
                             event.setDeviceName(deviceName);
@@ -151,17 +159,16 @@ public class TrapThreadClass implements Runnable {
                             event.setAlarmStatus(alarmStatus);
 
                             SnmpTrapListener.insertEventLogList.add(event);
-                            SnmpTrapListener.alarmStatus.put(device_ip + "~" + trapValue, alarmStatus);
+                            //   SnmpTrapListener.alarmStatus.put(device_ip + "~" + trapValue, alarmStatus);
 
+                            //  }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            System.out.println("Exception occured while parsing data = " + e);
                         }
 
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        System.out.println("Exception occured while parsing data = " + e);
-                    }
-
-                } else if (trapOID.equals("1.3.6.1.4.1.20246.2.3.1.1.1.3.1.0.2")) {
-                    isTrapValid = true;
+                    } else if (trapOID.equals("1.3.6.1.4.1.20246.2.3.1.1.1.3.1.0.2")) {
+                        isTrapValid = true;
 
 //                        Door Open-#warning,
 //1.3.6.1.2.1.1.3.0 = 87 days, 23:49:30.42 - uptime
@@ -182,63 +189,62 @@ public class TrapThreadClass implements Runnable {
 //OID: .1.3.6.1.4.1.20246.2.3.1.1.1.2.2.6.0. Value: 32840; 
 //OID: .1.3.6.1.4.1.20246.2.3.1.1.1.2.2.7.0. Value: 1; 
 //OID: .1.3.6.1.4.1.20246.2.3.1.1.1.2.2.10.0. Value: DoorOpen alarm; 
-                    try {
+                        try {
 
-                        String nodeUptime = parsedData.get("1.3.6.1.2.1.1.3.0");
-                        String deviceName = parsedData.get("1.3.6.1.4.1.20246.2.3.1.1.1.2.1.1.0");
+                            String nodeUptime = parsedData.get("1.3.6.1.2.1.1.3.0");
+                            String deviceName = parsedData.get("1.3.6.1.4.1.20246.2.3.1.1.1.2.1.1.0");
 
-                        String deviceType = parsedData.get("1.3.6.1.4.1.20246.2.3.1.1.1.2.1.2.0");
-                        String eventTime = parsedData.get("1.3.6.1.4.1.20246.2.3.1.1.1.2.1.3.0");
-                        String alarmStatus = parsedData.get("1.3.6.1.4.1.20246.2.3.1.1.1.2.2.3.0");
-                        String trapValue = parsedData.get("1.3.6.1.4.1.20246.2.3.1.1.1.2.2.6.0");
-                        String severity = parsedData.get("1.3.6.1.4.1.20246.2.3.1.1.1.2.2.7.0");
-                        String alarmName = parsedData.get("1.3.6.1.4.1.20246.2.3.1.1.1.2.2.10.0");
+                            String deviceType = parsedData.get("1.3.6.1.4.1.20246.2.3.1.1.1.2.1.2.0");
+                            String eventTime = parsedData.get("1.3.6.1.4.1.20246.2.3.1.1.1.2.1.3.0");
+                            String alarmStatus = parsedData.get("1.3.6.1.4.1.20246.2.3.1.1.1.2.2.3.0");
+                            String trapValue = parsedData.get("1.3.6.1.4.1.20246.2.3.1.1.1.2.2.6.0");
+                            String severity = parsedData.get("1.3.6.1.4.1.20246.2.3.1.1.1.2.2.7.0");
+                            String alarmName = parsedData.get("1.3.6.1.4.1.20246.2.3.1.1.1.2.2.10.0");
 
-                        // Parsed summary
-                        System.out.println("Trap OID     : " + trapOID);
-                        System.out.println("nodeUptime   : " + nodeUptime);
-                        System.out.println("deviceName   : " + deviceName);
-                        System.out.println("deviceType   : " + deviceType);
-                        System.out.println("Event Time   : " + eventTime);
-                        System.out.println("Alarm Nme    : " + alarmName);
-                        System.out.println("Alarm Status : " + (alarmStatus != null && alarmStatus.equals("1") ? "Active" : "Cleared"));
-                        System.out.println("Severity     : " + severity);
-                        System.out.println("trap Value : " + trapValue);
+                            // Parsed summary
+                            System.out.println("Trap OID     : " + trapOID);
+                            System.out.println("nodeUptime   : " + nodeUptime);
+                            System.out.println("deviceName   : " + deviceName);
+                            System.out.println("deviceType   : " + deviceType);
+                            System.out.println("Event Time   : " + eventTime);
+                            System.out.println("Alarm Nme    : " + alarmName);
+                            System.out.println("Alarm Status : " + (alarmStatus != null && alarmStatus.equals("1") ? "Active" : "Cleared"));
+                            System.out.println("Severity     : " + severity);
+                            System.out.println("trap Value : " + trapValue);
 
-                        SNMPTrapLogModel log = new SNMPTrapLogModel();
-                        log.setDeviceIP(device_ip);
-                        log.setDeviceType(deviceType);
-                        log.setDeviceName(deviceName);
-                        log.setEventTime(Timestamp.valueOf(LocalDateTime.parse(eventTime)));
-                        log.setAlarmName(alarmName);
-                        log.setAlarmStatus(alarmStatus);
-                        log.setSeverity(severity);
-                        log.setAlarmID(trapValue);
-                        log.setNodeUptime(nodeUptime);
-                        log.setTrapOID(trapOID);
-                        log.setTrapTime(trapReceivedTime);
+                            SNMPTrapLogModel log = new SNMPTrapLogModel();
+                            log.setDeviceIP(device_ip);
+                            log.setDeviceType(deviceType);
+                            log.setDeviceName(deviceName);
+                            log.setEventTime(Timestamp.valueOf(LocalDateTime.parse(eventTime)));
+                            log.setAlarmName(alarmName);
+                            log.setAlarmStatus(alarmStatus);
+                            log.setSeverity(severity);
+                            log.setAlarmID(trapValue);
+                            log.setNodeUptime(nodeUptime);
+                            log.setTrapOID(trapOID);
+                            log.setTrapTime(trapReceivedTime);
 
-                        SnmpTrapListener.trapLogList.add(log);
+                            SnmpTrapListener.trapLogList.add(log);
 
-                        SNMPTrapUpdateModel model = new SNMPTrapUpdateModel();
-                        model.setDeviceIP(device_ip);
-                        model.setAlarmStatus(alarmStatus);
-                        model.setSeverity(severity);
-                        model.setTrapValue(trapValue);
-                        model.setNodeUptime(nodeUptime);
-                        model.setDeviceName(deviceName);
-                        model.setDeviceType(deviceType);
-                        model.setServiceName(alarmName);
+                            SNMPTrapUpdateModel model = new SNMPTrapUpdateModel();
+                            model.setDeviceIP(device_ip);
+                            model.setAlarmStatus(alarmStatus);
+                            model.setSeverity(severity);
+                            model.setTrapValue(trapValue);
+                            model.setNodeUptime(nodeUptime);
+                            model.setDeviceName(deviceName);
+                            model.setDeviceType(deviceType);
+                            model.setServiceName(alarmName);
 
-                        SnmpTrapListener.updateTrapList.add(model);
+                            SnmpTrapListener.updateTrapList.add(model);
 
-                        System.out.println("Data:" + device_ip + "~" + trapValue + ":");
-                        System.out.println("SnmpTrapListener.alarmStatus value:" + SnmpTrapListener.alarmStatus.toString());
+                            System.out.println("Data:" + device_ip + "~" + trapValue + ":");
+                            //  System.out.println("SnmpTrapListener.alarmStatus value:" + SnmpTrapListener.alarmStatus.toString());
 
-                        String currentAlarmStatus = SnmpTrapListener.alarmStatus.get(device_ip + "~" + trapValue);
-                        System.out.println("status:" + currentAlarmStatus + ":" + alarmStatus);
-                        if (!currentAlarmStatus.equalsIgnoreCase(alarmStatus)) {
-
+                            // String currentAlarmStatus = SnmpTrapListener.alarmStatus.get(device_ip + "~" + trapValue);
+                            //System.out.println("status:" + currentAlarmStatus + ":" + alarmStatus);
+                            // if (!currentAlarmStatus.equalsIgnoreCase(alarmStatus)) {
                             EventLog event = new EventLog();
                             event.setDeviceId(device_ip);
                             event.setDeviceName(deviceName);
@@ -250,19 +256,18 @@ public class TrapThreadClass implements Runnable {
                             event.setDevicetype(deviceType);
                             event.setServiceId(trapValue);
                             event.setAlarmStatus(alarmStatus);
-                            
-                            SnmpTrapListener.insertEventLogList.add(event);
-                            SnmpTrapListener.alarmStatus.put(device_ip + "~" + trapValue, alarmStatus);
 
+                            SnmpTrapListener.insertEventLogList.add(event);
+                            //   SnmpTrapListener.alarmStatus.put(device_ip + "~" + trapValue, alarmStatus);
+
+                            //  }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            System.out.println("Exception occured while parsing data = " + e);
                         }
 
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        System.out.println("Exception occured while parsing data = " + e);
-                    }
-
-                } else if (trapOID.equals("1.3.6.1.4.1.20246.2.3.1.1.1.3.1.0.3")) {
-                    isTrapValid = true;
+                    } else if (trapOID.equals("1.3.6.1.4.1.20246.2.3.1.1.1.3.1.0.3")) {
+                        isTrapValid = true;
 
 //                        OID: .1.3.6.1.6.3.1.1.4.1.0. Value: .1.3.6.1.4.1.20246.2.3.1.1.1.3.1.0.3; 
 //OID: .1.3.6.1.4.1.20246.2.3.1.1.1.2.1.1.0. Value: W4-PWR2; 
@@ -272,59 +277,58 @@ public class TrapThreadClass implements Runnable {
 //OID: .1.3.6.1.4.1.20246.2.3.1.1.1.2.2.14.0. Value: 32839; 
 //OID: .1.3.6.1.4.1.20246.2.3.1.1.1.2.2.15.0. Value: 1; 
 //OID: .1.3.6.1.4.1.20246.2.3.1.1.1.2.2.16.0. Value: HighTemp alarm; 
-                    try {
+                        try {
 
-                        String nodeUptime = parsedData.get("1.3.6.1.2.1.1.3.0");
-                        String deviceName = parsedData.get("1.3.6.1.4.1.20246.2.3.1.1.1.2.1.1.0");
+                            String nodeUptime = parsedData.get("1.3.6.1.2.1.1.3.0");
+                            String deviceName = parsedData.get("1.3.6.1.4.1.20246.2.3.1.1.1.2.1.1.0");
 
-                        String deviceType = parsedData.get("1.3.6.1.4.1.20246.2.3.1.1.1.2.1.2.0");
-                        String eventTime = parsedData.get("1.3.6.1.4.1.20246.2.3.1.1.1.2.1.3.0");
-                        String alarmStatus = parsedData.get("1.3.6.1.4.1.20246.2.3.1.1.1.2.2.13.0");
-                        String trapValue = parsedData.get("1.3.6.1.4.1.20246.2.3.1.1.1.2.2.14.0");
-                        String severity = parsedData.get("1.3.6.1.4.1.20246.2.3.1.1.1.2.2.9.15");
-                        String alarmName = parsedData.get("1.3.6.1.4.1.20246.2.3.1.1.1.2.2.16.0");
+                            String deviceType = parsedData.get("1.3.6.1.4.1.20246.2.3.1.1.1.2.1.2.0");
+                            String eventTime = parsedData.get("1.3.6.1.4.1.20246.2.3.1.1.1.2.1.3.0");
+                            String alarmStatus = parsedData.get("1.3.6.1.4.1.20246.2.3.1.1.1.2.2.13.0");
+                            String trapValue = parsedData.get("1.3.6.1.4.1.20246.2.3.1.1.1.2.2.14.0");
+                            String severity = parsedData.get("1.3.6.1.4.1.20246.2.3.1.1.1.2.2.9.15");
+                            String alarmName = parsedData.get("1.3.6.1.4.1.20246.2.3.1.1.1.2.2.16.0");
 
-                        // Parsed summary
-                        System.out.println("Trap OID     : " + trapOID);
-                        System.out.println("nodeUptime   : " + nodeUptime);
-                        System.out.println("deviceName   : " + deviceName);
-                        System.out.println("deviceType   : " + deviceType);
-                        System.out.println("Event Time   : " + eventTime);
-                        System.out.println("Alarm Nme    : " + alarmName);
-                        System.out.println("Alarm Status : " + (alarmStatus != null && alarmStatus.equals("1") ? "Active" : "Cleared"));
-                        System.out.println("Severity     : " + severity);
-                        System.out.println("trap Value : " + trapValue);
+                            // Parsed summary
+                            System.out.println("Trap OID     : " + trapOID);
+                            System.out.println("nodeUptime   : " + nodeUptime);
+                            System.out.println("deviceName   : " + deviceName);
+                            System.out.println("deviceType   : " + deviceType);
+                            System.out.println("Event Time   : " + eventTime);
+                            System.out.println("Alarm Nme    : " + alarmName);
+                            System.out.println("Alarm Status : " + (alarmStatus != null && alarmStatus.equals("1") ? "Active" : "Cleared"));
+                            System.out.println("Severity     : " + severity);
+                            System.out.println("trap Value : " + trapValue);
 
-                        SNMPTrapLogModel log = new SNMPTrapLogModel();
-                        log.setDeviceIP(device_ip);
-                        log.setDeviceType(deviceType);
-                        log.setDeviceName(deviceName);
-                        log.setEventTime(Timestamp.valueOf(LocalDateTime.parse(eventTime)));
-                        log.setAlarmName(alarmName);
-                        log.setAlarmStatus(alarmStatus);
-                        log.setSeverity(severity);
-                        log.setAlarmID(trapValue);
-                        log.setNodeUptime(nodeUptime);
-                        log.setTrapOID(trapOID);
-                        log.setTrapTime(trapReceivedTime);
+                            SNMPTrapLogModel log = new SNMPTrapLogModel();
+                            log.setDeviceIP(device_ip);
+                            log.setDeviceType(deviceType);
+                            log.setDeviceName(deviceName);
+                            log.setEventTime(Timestamp.valueOf(LocalDateTime.parse(eventTime)));
+                            log.setAlarmName(alarmName);
+                            log.setAlarmStatus(alarmStatus);
+                            log.setSeverity(severity);
+                            log.setAlarmID(trapValue);
+                            log.setNodeUptime(nodeUptime);
+                            log.setTrapOID(trapOID);
+                            log.setTrapTime(trapReceivedTime);
 
-                        SnmpTrapListener.trapLogList.add(log);
+                            SnmpTrapListener.trapLogList.add(log);
 
-                        SNMPTrapUpdateModel model = new SNMPTrapUpdateModel();
-                        model.setDeviceIP(device_ip);
-                        model.setAlarmStatus(alarmStatus);
-                        model.setSeverity(severity);
-                        model.setTrapValue(trapValue);
-                        model.setNodeUptime(nodeUptime);
-                        model.setDeviceName(deviceName);
-                        model.setDeviceType(deviceType);
-                        model.setServiceName(alarmName);
+                            SNMPTrapUpdateModel model = new SNMPTrapUpdateModel();
+                            model.setDeviceIP(device_ip);
+                            model.setAlarmStatus(alarmStatus);
+                            model.setSeverity(severity);
+                            model.setTrapValue(trapValue);
+                            model.setNodeUptime(nodeUptime);
+                            model.setDeviceName(deviceName);
+                            model.setDeviceType(deviceType);
+                            model.setServiceName(alarmName);
 
-                        SnmpTrapListener.updateTrapList.add(model);
+                            SnmpTrapListener.updateTrapList.add(model);
 
-                        String currentAlarmStatus = SnmpTrapListener.alarmStatus.get(device_ip + "~" + trapValue);
-                        if (!currentAlarmStatus.equalsIgnoreCase(alarmStatus)) {
-
+                            // String currentAlarmStatus = SnmpTrapListener.alarmStatus.get(device_ip + "~" + trapValue);
+                            // if (!currentAlarmStatus.equalsIgnoreCase(alarmStatus)) {
                             EventLog event = new EventLog();
                             event.setDeviceId(device_ip);
                             event.setDeviceName(deviceName);
@@ -338,36 +342,40 @@ public class TrapThreadClass implements Runnable {
                             event.setAlarmStatus(alarmStatus);
 
                             SnmpTrapListener.insertEventLogList.add(event);
-                            SnmpTrapListener.alarmStatus.put(device_ip + "~" + trapValue, alarmStatus);
+                            //    SnmpTrapListener.alarmStatus.put(device_ip + "~" + trapValue, alarmStatus);
 
+                            //  }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            System.out.println("Exception occured while parsing data = " + e);
                         }
-
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        System.out.println("Exception occured while parsing data = " + e);
                     }
                 }
-            }
 
-            if (!isTrapValid) {
-                System.out.println("Trap Not valid");
+                if (!isTrapValid) {
+                    System.out.println("Trap Not valid");
 
-                String insertQuery = "insert into snmp_raw_trap_log (DEVICE_IP, RAW_SNMP_DATA, EVENT_TIME) values(?,?,?)";
-                try (Connection connection = Datasource.getConnection();
-                        PreparedStatement preparedStatement = connection.prepareStatement(insertQuery)) {
+                    String insertQuery = "insert into snmp_raw_trap_log (DEVICE_IP, RAW_SNMP_DATA, EVENT_TIME) values(?,?,?)";
+                    try (Connection connection = Datasource.getConnection();
+                            PreparedStatement preparedStatement = connection.prepareStatement(insertQuery)) {
 
-                    preparedStatement.setString(1, device_ip);
-                    preparedStatement.setString(2, command.toString());
-                    preparedStatement.setTimestamp(3, trapReceivedTime);
-                    preparedStatement.executeUpdate();
+                        preparedStatement.setString(1, device_ip);
+                        preparedStatement.setString(2, command.toString());
+                        preparedStatement.setTimestamp(3, trapReceivedTime);
+                        preparedStatement.executeUpdate();
 
-                    System.out.println("Inserted in snmp_raw_trap_log");
+                        System.out.println("Inserted in snmp_raw_trap_log");
 
-                } catch (Exception exp) {
-                    System.out.println("DB Exception: " + exp);
+                    } catch (Exception exp) {
+                        System.out.println("DB Exception: " + exp);
+                    }
                 }
+
             }
 
+        } catch (Exception exp) {
+            exp.printStackTrace();
+            System.out.println("Exception Trpthread class: " + exp);
         }
 
     }

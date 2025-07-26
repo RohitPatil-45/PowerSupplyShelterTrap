@@ -104,7 +104,13 @@ public class SNMPTrapUpdate implements Runnable {
 //    }
     @Override
     public void run() {
-        System.out.println("Start update in snmp_trap_live_status");
+    
+        if (SnmpTrapListener.updateTrapList.isEmpty()) {
+            System.out.println("No data to update.");
+            return;
+        }
+            //System.out.println("Start update in snmp_trap_live_status:"+SnmpTrapListener.updateTrapList.toString());
+        
         int count = 0;
 
         // Queries
@@ -119,16 +125,12 @@ public class SNMPTrapUpdate implements Runnable {
             System.out.println("Exception in batch update=" + e);
         }
 
-        if (SnmpTrapListener.updateTrapListTemp.isEmpty()) {
-            System.out.println("No data to update.");
-            return;
-        }
 
         try (
                 Connection connection = Datasource.getConnection();
                 PreparedStatement psGenerate = connection.prepareStatement(updateQueryGenerate);
                 PreparedStatement psCleared = connection.prepareStatement(updateQueryCleared);) {
-            connection.setAutoCommit(false);
+          
             Timestamp logDateTime = new Timestamp(System.currentTimeMillis());
             for (SNMPTrapUpdateModel trapLog : SnmpTrapListener.updateTrapListTemp) {
                 try {
@@ -143,7 +145,8 @@ public class SNMPTrapUpdate implements Runnable {
                         psGenerate.setString(6, "true");
                         psGenerate.setString(7, trapLog.getDeviceIP());
                         psGenerate.setString(8, trapLog.getTrapValue());
-                        psGenerate.addBatch();
+                        psGenerate.executeUpdate();
+//                        psGenerate.addBatch();
                     } else {
                         // Use psNormal
                         psCleared.setString(1, trapLog.getSeverity());
@@ -156,26 +159,35 @@ public class SNMPTrapUpdate implements Runnable {
                         psCleared.setString(6, trapLog.getDeviceIP());
 
                         psCleared.setString(7, trapLog.getTrapValue());
-                        psCleared.addBatch();
+                         psCleared.executeUpdate();
+//                        psCleared.addBatch();
                     }
 
-                    if (++count % 50 == 0) { // batch size
-                        System.out.println("Executing batch...");
-                        psCleared.executeBatch();
-                        psGenerate.executeBatch();
-                        psCleared.clearBatch();
-                        psGenerate.clearBatch();
-                    }
+//                    if (++count % 50 == 0) { // batch size
+//                        System.out.println("Executing batch...");
+//                        psCleared.executeBatch();
+//                        psGenerate.executeBatch();
+//                        psCleared.clearBatch();
+//                        psGenerate.clearBatch();
+//                    }
 
                 } catch (Exception e) {
-                    e.printStackTrace();
-                    System.out.println("update error: " + e);
+                   
+                    if(trapLog == null)
+                    {
+                        System.out.println("null data");
+                    }
+                    else{
+                        System.out.println(trapLog.getDeviceIP());
+                    }
+                     e.printStackTrace();
+                    System.out.println("update error: " + trapLog.getDeviceIP()+"/n"+trapLog.getServiceName()+"/n"+trapLog.getDeviceName()+"/n"+trapLog.getAlarmStatus());
                 }
             }
 
-            psCleared.executeBatch();
-            psGenerate.executeBatch();
-            connection.commit();
+//            psCleared.executeBatch();
+//            psGenerate.executeBatch();
+            
             System.out.println("Updated " + count + " snmp trap live status records.");
 
         } catch (Exception exp) {

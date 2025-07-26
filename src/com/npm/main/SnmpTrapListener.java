@@ -34,8 +34,9 @@ public class SnmpTrapListener {
 
     public static ArrayList<EventLog> insertEventLogList = null;
     public static ArrayList<EventLog> insertEventLogListTemp = null;
+    public static int trap_count=0;
 
-    public static HashMap<String, String> alarmStatus = null;
+//    public static HashMap<String, String> alarmStatus = null;
 
     public void start() throws IOException {
 
@@ -48,21 +49,21 @@ public class SnmpTrapListener {
         insertEventLogList = new ArrayList<>();
         insertEventLogListTemp = new ArrayList<>();
 
-        alarmStatus = new HashMap<>();
-
-        String selectQuery = "select DEVICE_IP, ALARM_ID, ALARM_STATUS from snmp_trap_live_status";
-        try (
-                Connection con = Datasource.getConnection();
-                Statement st = con.createStatement();
-                ResultSet rs = st.executeQuery(selectQuery);) {
-
-            while (rs.next()) {
-                alarmStatus.put(rs.getString("DEVICE_IP") + "~" + rs.getString("ALARM_ID"), rs.getString("ALARM_STATUS"));
-            }
-
-        } catch (Exception e) {
-            System.out.println("Exception while fetching alarm status  = " + e);
-        }
+//        alarmStatus = new HashMap<>();
+//
+//        String selectQuery = "select DEVICE_IP, ALARM_ID, ALARM_STATUS from snmp_trap_live_status";
+//        try (
+//                Connection con = Datasource.getConnection();
+//                Statement st = con.createStatement();
+//                ResultSet rs = st.executeQuery(selectQuery);) {
+//
+//            while (rs.next()) {
+//                alarmStatus.put(rs.getString("DEVICE_IP") + "~" + rs.getString("ALARM_ID"), rs.getString("ALARM_STATUS"));
+//            }
+//
+//        } catch (Exception e) {
+//            System.out.println("Exception while fetching alarm status  = " + e);
+//        }
 
         System.out.println("SNMP trap receiver start");
         Address address = GenericAddress.parse("udp:0.0.0.0/162");
