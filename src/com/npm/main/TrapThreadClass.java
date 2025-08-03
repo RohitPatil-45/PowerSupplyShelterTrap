@@ -5,16 +5,23 @@
  */
 package com.npm.main;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.npm.datasource.Datasource;
 import com.npm.model.EventLog;
 import com.npm.model.SNMPTrapLogModel;
 import com.npm.model.SNMPTrapUpdateModel;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 import org.snmp4j.CommandResponderEvent;
 import org.snmp4j.PDU;
 import org.snmp4j.smi.VariableBinding;
@@ -27,15 +34,25 @@ public class TrapThreadClass implements Runnable {
 
     public CommandResponderEvent e;
 
+    String eventMsg1 = null;
+    String netadminMsg = null;
+    String isAffected = null;
+    String problem = null;
+
+    private static final int MAX_RETRIES = 3;
+    private static final int RETRY_DELAY_MS = 2000;
+
+    private final ObjectMapper mapper = new ObjectMapper();
+
     public TrapThreadClass(CommandResponderEvent events) {
         this.e = events;
 
     }
 
     public void run() {
-        
-        SnmpTrapListener.trap_count=SnmpTrapListener.trap_count+1;
-        System.out.println("trap_count:"+SnmpTrapListener.trap_count);
+
+        SnmpTrapListener.trap_count = SnmpTrapListener.trap_count + 1;
+        System.out.println("trap_count:" + SnmpTrapListener.trap_count);
 
         try {
 
@@ -146,20 +163,25 @@ public class TrapThreadClass implements Runnable {
 
                             // String currentAlarmStatus = SnmpTrapListener.alarmStatus.get(device_ip + "~" + trapValue);
                             //if (!currentAlarmStatus.equalsIgnoreCase(alarmStatus)) {
-                            EventLog event = new EventLog();
-                            event.setDeviceId(device_ip);
-                            event.setDeviceName(deviceName);
-                            event.setEventMsg(alarmName + " is " + (alarmStatus != null && alarmStatus.equals("1") ? "Active" : "Cleared"));
-                            event.setEventTimestamp(trapReceivedTime);
-                            event.setNetadminMsg(alarmName + " is " + (alarmStatus != null && alarmStatus.equals("1") ? "Active" : "Cleared"));
-                            event.setServiceName(alarmName);
-                            event.setSeverity(severity);
-                            event.setDevicetype(deviceType);
-                            event.setServiceId(trapValue);
-                            event.setAlarmStatus(alarmStatus);
-
-                            SnmpTrapListener.insertEventLogList.add(event);
+//                            EventLog event = new EventLog();
+//                            event.setDeviceId(device_ip);
+//                            event.setDeviceName(deviceName);
+//                            event.setEventMsg(alarmName + " is " + (alarmStatus != null && alarmStatus.equals("1") ? "Active" : "Cleared"));
+//                            event.setEventTimestamp(trapReceivedTime);
+//                            event.setNetadminMsg(alarmName + " is " + (alarmStatus != null && alarmStatus.equals("1") ? "Active" : "Cleared"));
+//                            event.setServiceName(alarmName);
+//                            event.setSeverity(severity);
+//                            event.setDevicetype(deviceType);
+//                            event.setServiceId(trapValue);
+//                            event.setAlarmStatus(alarmStatus);
+//
+//                            SnmpTrapListener.insertEventLogList.add(event);
                             //   SnmpTrapListener.alarmStatus.put(device_ip + "~" + trapValue, alarmStatus);
+                            eventMsg1 = alarmName + " is " + (alarmStatus != null && alarmStatus.equals("1") ? "Active" : "Cleared");
+                            netadminMsg = eventMsg1;
+                            isAffected = alarmStatus != null && alarmStatus.equals("1") ? "1" : "0";
+                            problem = alarmStatus != null && alarmStatus.equals("1") ? "problem" : "clear";
+                            sendEventLogToApi(device_ip, deviceName, eventMsg1, Integer.valueOf(severity), alarmName, trapReceivedTime, netadminMsg, isAffected, problem, trapValue, deviceType, 0);
 
                             //  }
                         } catch (Exception e) {
@@ -245,19 +267,24 @@ public class TrapThreadClass implements Runnable {
                             // String currentAlarmStatus = SnmpTrapListener.alarmStatus.get(device_ip + "~" + trapValue);
                             //System.out.println("status:" + currentAlarmStatus + ":" + alarmStatus);
                             // if (!currentAlarmStatus.equalsIgnoreCase(alarmStatus)) {
-                            EventLog event = new EventLog();
-                            event.setDeviceId(device_ip);
-                            event.setDeviceName(deviceName);
-                            event.setEventMsg(alarmName + " is " + (alarmStatus != null && alarmStatus.equals("1") ? "Active" : "Cleared"));
-                            event.setEventTimestamp(trapReceivedTime);
-                            event.setNetadminMsg(alarmName + " is " + (alarmStatus != null && alarmStatus.equals("1") ? "Active" : "Cleared"));
-                            event.setServiceName(alarmName);
-                            event.setSeverity(severity);
-                            event.setDevicetype(deviceType);
-                            event.setServiceId(trapValue);
-                            event.setAlarmStatus(alarmStatus);
-
-                            SnmpTrapListener.insertEventLogList.add(event);
+//                            EventLog event = new EventLog();
+//                            event.setDeviceId(device_ip);
+//                            event.setDeviceName(deviceName);
+//                            event.setEventMsg(alarmName + " is " + (alarmStatus != null && alarmStatus.equals("1") ? "Active" : "Cleared"));
+//                            event.setEventTimestamp(trapReceivedTime);
+//                            event.setNetadminMsg(alarmName + " is " + (alarmStatus != null && alarmStatus.equals("1") ? "Active" : "Cleared"));
+//                            event.setServiceName(alarmName);
+//                            event.setSeverity(severity);
+//                            event.setDevicetype(deviceType);
+//                            event.setServiceId(trapValue);
+//                            event.setAlarmStatus(alarmStatus);
+//
+//                            SnmpTrapListener.insertEventLogList.add(event);
+                            eventMsg1 = alarmName + " is " + (alarmStatus != null && alarmStatus.equals("1") ? "Active" : "Cleared");
+                            netadminMsg = eventMsg1;
+                            isAffected = alarmStatus != null && alarmStatus.equals("1") ? "1" : "0";
+                            problem = alarmStatus != null && alarmStatus.equals("1") ? "problem" : "clear";
+                            sendEventLogToApi(device_ip, deviceName, eventMsg1, Integer.valueOf(severity), alarmName, trapReceivedTime, netadminMsg, isAffected, problem, trapValue, deviceType, 0);
                             //   SnmpTrapListener.alarmStatus.put(device_ip + "~" + trapValue, alarmStatus);
 
                             //  }
@@ -329,20 +356,25 @@ public class TrapThreadClass implements Runnable {
 
                             // String currentAlarmStatus = SnmpTrapListener.alarmStatus.get(device_ip + "~" + trapValue);
                             // if (!currentAlarmStatus.equalsIgnoreCase(alarmStatus)) {
-                            EventLog event = new EventLog();
-                            event.setDeviceId(device_ip);
-                            event.setDeviceName(deviceName);
-                            event.setEventMsg(alarmName + " is " + (alarmStatus != null && alarmStatus.equals("1") ? "Active" : "Cleared"));
-                            event.setEventTimestamp(trapReceivedTime);
-                            event.setNetadminMsg(alarmName + " is " + (alarmStatus != null && alarmStatus.equals("1") ? "Active" : "Cleared"));
-                            event.setServiceName(alarmName);
-                            event.setSeverity(severity);
-                            event.setDevicetype(deviceType);
-                            event.setServiceId(trapValue);
-                            event.setAlarmStatus(alarmStatus);
-
-                            SnmpTrapListener.insertEventLogList.add(event);
+//                            EventLog event = new EventLog();
+//                            event.setDeviceId(device_ip);
+//                            event.setDeviceName(deviceName);
+//                            event.setEventMsg(alarmName + " is " + (alarmStatus != null && alarmStatus.equals("1") ? "Active" : "Cleared"));
+//                            event.setEventTimestamp(trapReceivedTime);
+//                            event.setNetadminMsg(alarmName + " is " + (alarmStatus != null && alarmStatus.equals("1") ? "Active" : "Cleared"));
+//                            event.setServiceName(alarmName);
+//                            event.setSeverity(severity);
+//                            event.setDevicetype(deviceType);
+//                            event.setServiceId(trapValue);
+//                            event.setAlarmStatus(alarmStatus);
+//
+//                            SnmpTrapListener.insertEventLogList.add(event);
                             //    SnmpTrapListener.alarmStatus.put(device_ip + "~" + trapValue, alarmStatus);
+                            eventMsg1 = alarmName + " is " + (alarmStatus != null && alarmStatus.equals("1") ? "Active" : "Cleared");
+                            netadminMsg = eventMsg1;
+                            isAffected = alarmStatus != null && alarmStatus.equals("1") ? "1" : "0";
+                            problem = alarmStatus != null && alarmStatus.equals("1") ? "problem" : "clear";
+                            sendEventLogToApi(device_ip, deviceName, eventMsg1, Integer.valueOf(severity), alarmName, trapReceivedTime, netadminMsg, isAffected, problem, trapValue, deviceType, 0);
 
                             //  }
                         } catch (Exception e) {
@@ -378,6 +410,87 @@ public class TrapThreadClass implements Runnable {
             System.out.println("Exception Trpthread class: " + exp);
         }
 
+    }
+
+    public void sendEventLogToApi(String deviceID, String deviceName, String eventMsg, int severity, String serviceName, Timestamp evenTimestamp,
+            String netadmin_msg, String isAffected, String problem, String serviceId, String deviceType, int attempt) {
+        EventLog log = new EventLog();
+        log.setDeviceId(deviceID);
+        log.setDeviceName(deviceName);
+        log.setEventMsg(eventMsg);
+        log.setSeverity(String.valueOf(severity));
+        log.setServiceName(serviceName);
+        log.setEventTimestamp(evenTimestamp);
+        log.setNetadminMsg(netadmin_msg);
+        log.setIsaffected(Integer.valueOf(isAffected));
+        log.setProblemClear(problem);
+        log.setServiceID(serviceId);
+        log.setDeviceType(deviceType);
+
+        System.out.println("service id = " + serviceId);
+        System.out.println("sAffected = " + isAffected);
+
+        CloseableHttpClient httpClient = HttpClients.createDefault();
+        ObjectMapper mapper = new ObjectMapper();
+
+        try {
+            String json = mapper.writeValueAsString(log);
+            HttpPost request = new HttpPost("http://localhost:8083/api/event/log"); // adjust host/port
+            request.setHeader("Content-Type", "application/json");
+            request.setEntity(new StringEntity(json));
+
+            CloseableHttpResponse response = httpClient.execute(request);
+            int statusCode = response.getStatusLine().getStatusCode();
+
+            if (statusCode >= 200 && statusCode < 300) {
+                System.out.println("Log sent successfully: " + statusCode);
+            } else {
+                System.err.println("Failed to send log, status: " + statusCode);
+                retryIfNeeded(log, attempt);
+            }
+
+            response.close();
+        } catch (IOException e) {
+            System.err.println("Exception while sending log: " + e.getMessage());
+            retryIfNeeded(log, attempt);
+        } finally {
+            try {
+                httpClient.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+    }
+
+    private void retryIfNeeded(EventLog log, int attempt) {
+        if (attempt < MAX_RETRIES) {
+            System.out.println("Retrying sendEventLogToApi... Attempt " + (attempt + 1));
+            try {
+                Thread.sleep(RETRY_DELAY_MS);
+            } catch (InterruptedException ie) {
+                Thread.currentThread().interrupt(); // Preserve interrupt status
+                return;
+            }
+
+            // Retry the API call with incremented attempt count
+            sendEventLogToApi(
+                    log.getDeviceId(),
+                    log.getDeviceName(),
+                    log.getEventMsg(),
+                    Integer.valueOf(log.getSeverity()),
+                    log.getServiceName(),
+                    log.getEventTimestamp(),
+                    log.getNetadminMsg(),
+                    log.getIsaffected().toString(),
+                    log.getProblemClear(),
+                    log.getServiceID(),
+                    log.getDeviceType(),
+                    attempt + 1
+            );
+        } else {
+            System.err.println("Max retries reached. Dropping event log.");
+        }
     }
 
 }

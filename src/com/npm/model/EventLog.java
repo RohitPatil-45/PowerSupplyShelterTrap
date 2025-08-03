@@ -24,7 +24,18 @@ public class EventLog {
     private String serviceId;
     private String deviceType;
     private String alarmStatus;
-    private String isAffected;
+    private Integer isaffected;
+
+    private String alarmAcknowledgedBy;
+    private Timestamp alarmAcknowledgedTime;
+    private Timestamp clearedEventTimestamp;
+
+    private String problemClear;
+    private String serviceID;
+    private int acknowledgementStatus;
+
+    private String isNotification;
+    private Integer isAcknowledged;
 
     public Timestamp getEventTimestamp() {
         return eventTimestamp;
@@ -114,13 +125,78 @@ public class EventLog {
         this.alarmStatus = alarmStatus;
     }
 
-    public String getIsAffected() {
-        return isAffected;
+    public Integer getIsaffected() {
+        return isaffected;
     }
 
-    public void setIsAffected(String isAffected) {
-        this.isAffected = isAffected;
+    public void setIsaffected(Integer isaffected) {
+        this.isaffected = isaffected;
     }
+
+    public String getAlarmAcknowledgedBy() {
+        return alarmAcknowledgedBy;
+    }
+
+    public void setAlarmAcknowledgedBy(String alarmAcknowledgedBy) {
+        this.alarmAcknowledgedBy = alarmAcknowledgedBy;
+    }
+
+    public Timestamp getAlarmAcknowledgedTime() {
+        return alarmAcknowledgedTime;
+    }
+
+    public void setAlarmAcknowledgedTime(Timestamp alarmAcknowledgedTime) {
+        this.alarmAcknowledgedTime = alarmAcknowledgedTime;
+    }
+
+    public Timestamp getClearedEventTimestamp() {
+        return clearedEventTimestamp;
+    }
+
+    public void setClearedEventTimestamp(Timestamp clearedEventTimestamp) {
+        this.clearedEventTimestamp = clearedEventTimestamp;
+    }
+
+    public String getProblemClear() {
+        return problemClear;
+    }
+
+    public void setProblemClear(String problemClear) {
+        this.problemClear = problemClear;
+    }
+
+    public String getServiceID() {
+        return serviceID;
+    }
+
+    public void setServiceID(String serviceID) {
+        this.serviceID = serviceID;
+    }
+
+    public int getAcknowledgementStatus() {
+        return acknowledgementStatus;
+    }
+
+    public void setAcknowledgementStatus(int acknowledgementStatus) {
+        this.acknowledgementStatus = acknowledgementStatus;
+    }
+
+    public String getIsNotification() {
+        return isNotification;
+    }
+
+    public void setIsNotification(String isNotification) {
+        this.isNotification = isNotification;
+    }
+
+    public Integer getIsAcknowledged() {
+        return isAcknowledged;
+    }
+
+    public void setIsAcknowledged(Integer isAcknowledged) {
+        this.isAcknowledged = isAcknowledged;
+    }
+    
     
     
 
